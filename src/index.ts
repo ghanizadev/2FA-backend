@@ -22,6 +22,8 @@ app.use((req, res, next) => {
 app.use(router);
 app.use(errorHandler);
 
-server.listen(3333, () => {
-  console.log("Server listening to 3333");
+const port = process.env.PORT || 3333;
+
+server.listen(port, () => {
+  console.log("Server listening to %d", port);
 });
