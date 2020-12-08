@@ -1,6 +1,6 @@
 import { v4 } from "uuid";
 import { ClientInterface } from "./IClient";
-import { ClientSetOptions } from "./clientSetOptions";
+import { ClientSetOptions } from "./ClientSetOptions";
 import { ClientCreateOptions } from "./ClientCreateOptions";
 import instance from "../../database";
 import utils from "../../utils";
