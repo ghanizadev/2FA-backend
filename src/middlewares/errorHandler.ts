@@ -25,6 +25,10 @@ export default (
       return res
         .status(400)
         .send({ error: "invalid_request", message: "this request must be url encoded" });
+    case "!code":
+      return res
+        .status(401)
+        .send({ error: "unauthorized", message: "invalid code" });
     case "!auth":
       return res
         .status(401)
