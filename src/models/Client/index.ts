@@ -5,26 +5,25 @@ import { ClientCreateOptions } from "./ClientCreateOptions";
 import instance from "../../database";
 import utils from "../../utils";
 import dotenv from "dotenv";
+import crypto from "crypto";
 
 dotenv.config();
 
 class Client implements ClientInterface {
   private _id: string;
   private _code: string;
-  private _auth: string;
+  private _secret: string;
   private _ip: string;
   private _expires: number;
-  private _socketId: string;
 
   constructor(client: ClientCreateOptions) {
-    this._id = v4();
+    this._id = client.socketId;
     this._ip = client.ip;
-    this._socketId = client.socketId;
 
     const code = utils.randomChar(12);
 
     this._code = code;
-    this._auth = utils.encrypt(code);
+    this._secret = crypto.randomBytes(16).toString("hex");
 
     this._expires = 30000;
   }
@@ -35,20 +34,14 @@ class Client implements ClientInterface {
   get code() {
     return this._code;
   }
-  get auth() {
-    return this._auth;
-  }
   get ip() {
     return this._ip;
-  }
-  get socketId() {
-    return this._socketId;
   }
 
   public validate() {
     if (!this._id) throw new Error("indvalid ID");
     if (!this._code) throw new Error("indvalid code");
-    if (!this._auth) throw new Error("indvalid auth");
+    if (!this._secret) throw new Error("indvalid auth");
     if (!this._ip) throw new Error("indvalid ip");
   }
 
@@ -66,13 +59,13 @@ class Client implements ClientInterface {
       this._id,
       JSON.stringify(this),
       "EX",
-      this._expires / 1000
+      86400
     );
     const idResult = await instance.set(
       this._code,
       this._id,
       "EX",
-      this._expires / 1000
+      86400
     );
 
     if (idResult === "OK" && clientResult === "OK") return this;
@@ -81,7 +74,7 @@ class Client implements ClientInterface {
   }
 
   public equals(other: Client): boolean {
-    return this.id === other.id;
+    return this._id === other._id;
   }
 
   public toString(): string {
@@ -92,7 +85,7 @@ class Client implements ClientInterface {
     const result = new Client({ ip: client._ip, socketId: client._socketId });
 
     result._ip = client._ip;
-    result._auth = client._auth;
+    result._secret = client._secret;
     result._code = client._code;
     result._id = client._id;
 
@@ -116,6 +109,30 @@ class Client implements ClientInterface {
     if (result > 0) return;
 
     throw new Error("client not found");
+  }
+
+  private hashCode = (code: string) => {
+    const signature = this._id + code + this._secret;
+    return crypto.createHash('sha256').update(signature).digest('hex');
+  }
+
+  public verify(value: string) : boolean {
+    const [code, signature] = value.split(".");
+    const hash = this.hashCode(code);
+
+    return hash === signature;
+  }
+
+  public generate() : string {
+    let code = utils.randomChar(16);
+    const signature = this.hashCode(code);
+
+    const result = {
+      code: `${code}.${signature}`,
+      expires: this._expires,
+    }
+
+    return JSON.stringify(result);
   }
 }
 

@@ -2,7 +2,7 @@ import crypto from "crypto";
 import path from "path";
 import fs from "fs";
 
-const char = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_!@#$%&*()=+";
 const PRIVATE_KEY = "./src/keys/rsa_4096_priv.pem";
 const PUBLIC_KEY = "./src/keys/rsa_4096_pub.pem";
 
@@ -48,5 +48,7 @@ const decrypt = (
 
   return decrypted.toString("utf-8");
 };
+
+
 
 export default { randomChar, encrypt, decrypt };

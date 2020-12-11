@@ -12,17 +12,12 @@ export default async (socket: Socket, next: (err?: ExtendedError) => void) => {
     });
   
     client.save();
-    socket.emit("code", client.toString());
+    socket.emit("code", client.generate());
   })
 
-  socket.on("generate", () => {
-    const client = new Client({
-      ip: socket.handshake.address,
-      socketId: socket.id
-    });
-  
-    client.save();
-    socket.emit("code", client.toString());
+  socket.on("generate", async () => {
+    const client = await Client.findById(socket.id);
+    socket.emit("code", client.generate());
   })
 
   socket.on("disconnect", (reason) => {
