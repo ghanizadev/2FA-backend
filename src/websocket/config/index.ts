@@ -1,6 +1,6 @@
 export default {
     cors: {
-        origin: "http://localhost:3000",
+        origin: "https://2-fa-frontend.vercel.app/",
         methods: ["GET", "POST"],
         allowedHeaders: ["*"]
       }
