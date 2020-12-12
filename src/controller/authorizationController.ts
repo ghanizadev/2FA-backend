@@ -7,7 +7,9 @@ export default {
     try {
       const { code } = req.body;
 
-      const client = await Client.findByCode(code);
+      const _code = code.split(".")[0];
+
+      const client = await Client.findByCode(_code);
       if (!client) return res.sendStatus(404);
 
       if (client.verify(code)) {

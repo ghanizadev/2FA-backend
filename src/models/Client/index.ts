@@ -123,12 +123,23 @@ class Client implements ClientInterface {
     return hash === signature;
   }
 
-  public generate() : string {
-    let code = utils.randomChar(16);
-    const signature = this.hashCode(code);
+  public async generate() : Promise<string> {
+    const payload = utils.randomChar(16);
+    const signature = this.hashCode(payload);
+
+    const code = `${payload}.${signature}`;
+
+    const saved = await instance.set(
+      payload,
+      this._id,
+      "EX",
+      this._expires
+    );
+
+    if(saved !== "OK") throw new Error("failed to save");
 
     const result = {
-      code: `${code}.${signature}`,
+      code,
       expires: this._expires,
     }
 
